@@ -246,7 +246,8 @@ def load_weights(model):
 
 def main(args):
     
-    data, label_true, label_index, num_of_images = load_wikiart()
+    data, label_true, label_index, num_of_images = load_wikiart('wikiart_slim')
+
 
     """
         Preprocessing note: 

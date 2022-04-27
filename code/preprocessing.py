@@ -23,7 +23,7 @@ def load_mnist(batch_size, buffer_size=1024):
     train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
     return train_dataset
 
-def load_wikiart():
+def load_wikiart(root_folder_name='wikiart'):
 	"""
     Load wikiart from ./data folder
 
@@ -37,13 +37,14 @@ def load_wikiart():
     - num_of_images: An int representing the number of images in the data list
 	"""
 
-	data = glob(os.path.join("./cs1470-final/data/wikiart_slim/**/", '*.jpg')) 
+	data = glob(os.path.join(f'./art-CAN/data/{root_folder_name}/**/', '*.jpg')) 
+	
 	num_of_images = len(data)
 	label_true = [''] * num_of_images
 	label_index = [0] * num_of_images
 
-	prefix_length = len('./cs1470-final/data/wikiart_slim/') # 33
-	folder_path_list = glob('./cs1470-final/data/wikiart_slim/**/', recursive=True)[1:]
+	prefix_length = len(f'./art-CAN/data/{root_folder_name}/')
+	folder_path_list = glob(f'./art-CAN/data/{root_folder_name}/**/', recursive=True)[1:]
 
 	label_to_folder_index = {} # will be filled as { art_style (string): index (int): }
 	for index, folder_name in enumerate(folder_path_list):
