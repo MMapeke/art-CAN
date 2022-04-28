@@ -2,10 +2,11 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Reshape, BatchNormalization, LeakyReLU, Conv2DTranspose, Conv2D, Dropout
 import numpy as np
 
-# TODO: right noise generators, losses, etc. + initialize stuff like weights
-# TODO: Confirm data pipeline works
-# TODO: Confirm gpu compatible
+# TODO: Confirm data pipeline works, Need to normalize discriminator inputs maybe?
+# TODO: Confirm gpu compatible + GCP Setup
+# TODO: Model Saving + Loading, Visualizations, Plots
 # TODO: Integrate CAN Features
+# TODO: If normal GAN has trouble, try different architectures + mode collapse tricks (blurring discrim, )
 
 # This method returns a helper function to compute cross entropy loss
 cross_entropy = tf.keras.backend.binary_crossentropy
@@ -13,25 +14,25 @@ cross_entropy = tf.keras.backend.binary_crossentropy
 def make_generator_model():
     model = tf.keras.Sequential()
     
-    model.add(Dense(4*4*512, use_bias=False, input_shape=(100,)))
+    model.add(Dense(4*4*512, use_bias=False, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02), input_shape=(100,)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
     model.add(Reshape((4, 4, 512)))
 
-    model.add(Conv2DTranspose(256, (4, 4), strides=(2, 2), padding='same', use_bias=False))
+    model.add(Conv2DTranspose(256, (4, 4), strides=(2, 2), padding='same', use_bias=False, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same', use_bias=False))
+    model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same', use_bias=False, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2DTranspose(64, (4, 4), strides=(2, 2), padding='same', use_bias=False))
+    model.add(Conv2DTranspose(64, (4, 4), strides=(2, 2), padding='same', use_bias=False, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2DTranspose(3, (4, 4), strides=(2, 2), padding='same', use_bias=False))
+    model.add(Conv2DTranspose(3, (4, 4), strides=(2, 2), padding='same', use_bias=False, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(tf.keras.layers.Activation(tf.nn.tanh))
 
     assert model.output_shape == (None, 64, 64, 3)  # Note: None is the batch size
@@ -40,20 +41,20 @@ def make_generator_model():
 
 def make_discriminator_model():
     model = tf.keras.Sequential()
-    model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same',
+    model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
                                      input_shape=[64, 64, 3]))
     model.add(BatchNormalization()) # reference doesn't have this
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2D(128, (4, 4), strides=(2, 2), padding='same'))
+    model.add(Conv2D(128, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2D(256, (4, 4), strides=(2, 2), padding='same'))
+    model.add(Conv2D(256, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2D(512, (4, 4), strides=(2, 2), padding='same'))
+    model.add(Conv2D(512, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
@@ -82,7 +83,7 @@ class Discriminator(tf.keras.Model):
         # May switch the discriminate and classification heads to dense layers
         self.discriminate = tf.keras.Sequential(
             [
-                Conv2D(1, (4, 4), strides=(1, 1), padding='valid'),
+                Conv2D(1, (4, 4), strides=(1, 1), padding='valid', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)),
                 Reshape((1, )),
                 tf.keras.layers.Activation(tf.nn.sigmoid)
             ]

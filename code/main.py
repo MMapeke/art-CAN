@@ -11,7 +11,7 @@ def parseArguments():
     parser.add_argument("--num_epochs", type=int, default=75)
     parser.add_argument("--latent_size", type=int, default=100)
     parser.add_argument("--gen_lr", type=float, default=1e-4)
-    parser.add_argument("--disc_lr", type=float, default=1e-4)
+    parser.add_argument("--disc_lr", type=float, default=1e-5)
     parser.add_argument("--image_size", type=int, default = 64)
     args = parser.parse_args()
     return args
@@ -44,13 +44,19 @@ def train(generator, discriminator, dataset):
             train_step(generator, discriminator, batch)
         
         # Sanity Check: Saving Generates Images after each epoch to check if something being learned
-        # noise = tf.random.normal([1, args.latent_size])
-        # generated_img = generator(noise)[0]
-        # print(tf.reduce_max(generated_img), tf.reduce_min(generated_img))
-        # generated_img = tf.clip_by_value(generated_img, 0 , 1)
-        # generated_img = generated_img * 255
+        noise = tf.random.normal([4, args.latent_size])
+        img1 = generator(noise)[0]
+        img2 = generator(noise)[1]
+        img3 = generator(noise)[2]
+        img4 = generator(noise)[3]
+        generated_img = tf.concat(
+            (tf.concat((img1, img2), axis = 0), tf.concat((img3, img4), axis = 0)),
+            axis = 1)
+        # TODO: Unsure if individual images should be normalized to [0, 1] or clipped to [0, 1]
+        generated_img = tf.clip_by_value(generated_img, 0 , 1)
+        generated_img = generated_img * 255
 
-        # tf.keras.preprocessing.image.save_img("../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)
+        tf.keras.preprocessing.image.save_img("../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)
         
 
         # Logic for saving intermediate models would go here
