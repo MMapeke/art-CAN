@@ -61,7 +61,7 @@ def convert_to_tensor_dataset_1(data, labels, batch_size, buffer_size=1024):
 	train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
 	return train_dataset
 
-def convert_to_tensor_dataset_2(data, labels, batch_size, buffer_size=1024):
+def convert_to_tensor_dataset_2(data, labels, batch_size, image_size, buffer_size=1024):
 	"""
 	VERSION THAT USES FLATTENED AND CROPPED IMAGES AS THE DATA
 
@@ -76,7 +76,7 @@ def convert_to_tensor_dataset_2(data, labels, batch_size, buffer_size=1024):
     Returns:
     - train_dataset: A tf.data.Dataset instance of MNIST dataset. Batching and shuffling are already supported.
     """
-	input = get_images(data) # [num_of_images, channel_sizes, height, width] 
+	input = get_images(data, image_size, image_size) # [num_of_images, channel_sizes, height, width] 
 	input = input / 255.0
 	
 	# VAE assignment uses [batch_sz, channel_sz, height, width] instead, may need to reshape here?
