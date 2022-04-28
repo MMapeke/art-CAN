@@ -37,22 +37,26 @@ def load_wikiart(root_folder_name='wikiart'):
     - num_of_images: An int representing the number of images in the data list
 	"""
 
-	data = glob(os.path.join(f'./art-CAN/data/{root_folder_name}/**/', '*.jpg')) 
+	data = glob(os.path.join(f'../data/{root_folder_name}/**/', '*.jpg')) 
 	
 	num_of_images = len(data)
+	# print(num_of_images)
 	label_true = [''] * num_of_images
 	label_index = [0] * num_of_images
 
-	prefix_length = len(f'./art-CAN/data/{root_folder_name}/')
-	folder_path_list = glob(f'./art-CAN/data/{root_folder_name}/**/', recursive=True)[1:]
+	prefix_length = len(f'../data/{root_folder_name}/')
+	folder_path_list = glob(f'../data/{root_folder_name}/**/', recursive=True)[1:]
 
 	label_to_folder_index = {} # will be filled as { art_style (string): index (int): }
 	for index, folder_name in enumerate(folder_path_list):
 		label = folder_name[prefix_length:-1] # prefix_length cuts out './cs1470-final/data/wikiart/' from string, leaving 'art_style' as the label for the images (excluding the '/' at the end)
 		label_to_folder_index[label] = index
+	# print(label_to_folder_index)
 
 	for index, image_path in enumerate(data):
 		label = image_path[prefix_length:][: image_path[prefix_length:].find('/')]
+		if (label.find('\\') != -1): # Fix for windows filesystem
+			label = label[:label.find('\\')]
 		label_true[index] = label
 		label_index[index] = label_to_folder_index[label]
 
