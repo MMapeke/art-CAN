@@ -4,25 +4,6 @@ import os
 from glob import glob
 import tensorflow as tf
 
-def load_mnist(batch_size, buffer_size=1024):
-    """
-    Load and preprocess MNIST dataset from tf.keras.datasets.mnist.
-
-    Inputs:
-    - batch_size: An integer value of batch size.
-    - buffer_size: Buffer size for random sampling in tf.data.Dataset.shuffle().
-
-    Returns:
-    - train_dataset: A tf.data.Dataset instance of MNIST dataset. Batching and shuffling are already supported.
-    """
-    mnist = tf.keras.datasets.mnist
-    (x_train, y_train), _ = mnist.load_data()
-    x_train = x_train / 255.0
-    x_train = np.expand_dims(x_train, axis=1)  # [batch_sz, channel_sz, height, width]
-    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
-    return train_dataset
-
 def load_wikiart(root_folder_name='wikiart'):
 	"""
     Load wikiart from ./data folder
@@ -37,14 +18,15 @@ def load_wikiart(root_folder_name='wikiart'):
     - num_of_images: An int representing the number of images in the data list
 	"""
 
-	data = glob(os.path.join(f'./art-CAN/data/{root_folder_name}/**/', '*.jpg')) 
+	data = glob(os.path.join(f'../data/{root_folder_name}/**/', '*.jpg')) 
 	
 	num_of_images = len(data)
+	# print(num_of_images)
 	label_true = [''] * num_of_images
 	label_index = [0] * num_of_images
 
-	prefix_length = len(f'./art-CAN/data/{root_folder_name}/')
-	folder_path_list = glob(f'./art-CAN/data/{root_folder_name}/**/', recursive=True)[1:]
+	prefix_length = len(f'../data/{root_folder_name}/')
+	folder_path_list = glob(f'../data/{root_folder_name}/**/', recursive=True)[1:]
 
 	label_to_folder_index = {} # will be filled as { art_style (string): index (int): }
 	for index, folder_name in enumerate(folder_path_list):
@@ -53,6 +35,8 @@ def load_wikiart(root_folder_name='wikiart'):
 
 	for index, image_path in enumerate(data):
 		label = image_path[prefix_length:][: image_path[prefix_length:].find('/')]
+		if (label.find('\\') != -1): # Fix for windows filesystem
+			label = label[:label.find('\\')]
 		label_true[index] = label
 		label_index[index] = label_to_folder_index[label]
 
@@ -77,7 +61,7 @@ def convert_to_tensor_dataset_1(data, labels, batch_size, buffer_size=1024):
 	train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
 	return train_dataset
 
-def convert_to_tensor_dataset_2(data, labels, batch_size, buffer_size=1024):
+def convert_to_tensor_dataset_2(data, labels, batch_size, image_size, buffer_size=1024):
 	"""
 	VERSION THAT USES FLATTENED AND CROPPED IMAGES AS THE DATA
 
@@ -92,12 +76,12 @@ def convert_to_tensor_dataset_2(data, labels, batch_size, buffer_size=1024):
     Returns:
     - train_dataset: A tf.data.Dataset instance of MNIST dataset. Batching and shuffling are already supported.
     """
-	input = get_images(data[0:512]) # [num_of_images, channel_sizes, height, width] 
+	input = get_images(data, image_size, image_size) # [num_of_images, channel_sizes, height, width] 
 	input = input / 255.0
 	
 	# VAE assignment uses [batch_sz, channel_sz, height, width] instead, may need to reshape here?
 
-	train_dataset = tf.data.Dataset.from_tensor_slices((input, labels[0:512]))
+	train_dataset = tf.data.Dataset.from_tensor_slices((input, labels))
 	train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
 	return train_dataset
 
