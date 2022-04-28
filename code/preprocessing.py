@@ -4,25 +4,6 @@ import os
 from glob import glob
 import tensorflow as tf
 
-def load_mnist(batch_size, buffer_size=1024):
-    """
-    Load and preprocess MNIST dataset from tf.keras.datasets.mnist.
-
-    Inputs:
-    - batch_size: An integer value of batch size.
-    - buffer_size: Buffer size for random sampling in tf.data.Dataset.shuffle().
-
-    Returns:
-    - train_dataset: A tf.data.Dataset instance of MNIST dataset. Batching and shuffling are already supported.
-    """
-    mnist = tf.keras.datasets.mnist
-    (x_train, y_train), _ = mnist.load_data()
-    x_train = x_train / 255.0
-    x_train = np.expand_dims(x_train, axis=1)  # [batch_sz, channel_sz, height, width]
-    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
-    return train_dataset
-
 def load_wikiart(root_folder_name='wikiart'):
 	"""
     Load wikiart from ./data folder
@@ -51,7 +32,6 @@ def load_wikiart(root_folder_name='wikiart'):
 	for index, folder_name in enumerate(folder_path_list):
 		label = folder_name[prefix_length:-1] # prefix_length cuts out './cs1470-final/data/wikiart/' from string, leaving 'art_style' as the label for the images (excluding the '/' at the end)
 		label_to_folder_index[label] = index
-	# print(label_to_folder_index)
 
 	for index, image_path in enumerate(data):
 		label = image_path[prefix_length:][: image_path[prefix_length:].find('/')]
@@ -96,12 +76,12 @@ def convert_to_tensor_dataset_2(data, labels, batch_size, buffer_size=1024):
     Returns:
     - train_dataset: A tf.data.Dataset instance of MNIST dataset. Batching and shuffling are already supported.
     """
-	input = get_images(data[0:512]) # [num_of_images, channel_sizes, height, width] 
+	input = get_images(data) # [num_of_images, channel_sizes, height, width] 
 	input = input / 255.0
 	
 	# VAE assignment uses [batch_sz, channel_sz, height, width] instead, may need to reshape here?
 
-	train_dataset = tf.data.Dataset.from_tensor_slices((input, labels[0:512]))
+	train_dataset = tf.data.Dataset.from_tensor_slices((input, labels))
 	train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
 	return train_dataset
 
