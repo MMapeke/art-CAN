@@ -2,10 +2,9 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Reshape, BatchNormalization, LeakyReLU, Conv2DTranspose, Conv2D, Dropout
 import numpy as np
 
-# TODO: Get Basic DCGAN Style Architecture Working (Use Lab Code)
-# TODO: use correct architecture based on paper + right noise generators, losses, etc. + initialize stuff
+# TODO: right noise generators, losses, etc. + initialize stuff like weights
 # TODO: Confirm data pipeline works
-# TODO: confirm gpu compatible
+# TODO: Confirm gpu compatible
 # TODO: Integrate CAN Features
 
 # This method returns a helper function to compute cross entropy loss
@@ -13,40 +12,52 @@ cross_entropy = tf.keras.backend.binary_crossentropy
 
 def make_generator_model():
     model = tf.keras.Sequential()
-    model.add(Dense(7*7*256, use_bias=False, input_shape=(100,)))
+    
+    model.add(Dense(4*4*512, use_bias=False, input_shape=(100,)))
     model.add(BatchNormalization())
-    model.add(LeakyReLU())
+    model.add(LeakyReLU(0.2))
 
-    model.add(Reshape((7, 7, 256)))
-    # assert model.output_shape == (None, 7, 7, 256)  # Note: None is the batch size
+    model.add(Reshape((4, 4, 512)))
 
-    model.add(Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-    # assert model.output_shape == (None, 7, 7, 128)
+    model.add(Conv2DTranspose(256, (4, 4), strides=(2, 2), padding='same', use_bias=False))
     model.add(BatchNormalization())
-    model.add(LeakyReLU())
+    model.add(LeakyReLU(0.2))
 
-    model.add(tf.keras.layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-    # assert model.output_shape == (None, 14, 14, 64)
+    model.add(Conv2DTranspose(128, (4, 4), strides=(2, 2), padding='same', use_bias=False))
     model.add(BatchNormalization())
-    model.add(LeakyReLU())
+    model.add(LeakyReLU(0.2))
 
-    model.add(Conv2DTranspose(3, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
-    # assert model.output_shape == (None, 28, 28, 3)
+    model.add(Conv2DTranspose(64, (4, 4), strides=(2, 2), padding='same', use_bias=False))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(0.2))
+
+    model.add(Conv2DTranspose(3, (4, 4), strides=(2, 2), padding='same', use_bias=False))
+    model.add(tf.keras.layers.Activation(tf.nn.tanh))
+
+    assert model.output_shape == (None, 64, 64, 3)  # Note: None is the batch size
 
     return model
 
 def make_discriminator_model():
     model = tf.keras.Sequential()
-    model.add(Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-                                     input_shape=[28, 28, 3]))
-    model.add(LeakyReLU())
-    model.add(Dropout(0.3))
+    model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same',
+                                     input_shape=[64, 64, 3]))
+    model.add(BatchNormalization()) # reference doesn't have this
+    model.add(LeakyReLU(0.2))
 
-    model.add(Conv2D(128, (5, 5), strides=(2, 2), padding='same'))
-    model.add(LeakyReLU())
-    model.add(Dropout(0.3))
+    model.add(Conv2D(128, (4, 4), strides=(2, 2), padding='same'))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(0.2))
 
-    model.add(Flatten())
+    model.add(Conv2D(256, (4, 4), strides=(2, 2), padding='same'))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(0.2))
+
+    model.add(Conv2D(512, (4, 4), strides=(2, 2), padding='same'))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU(0.2))
+
+    assert model.output_shape == (None, 4, 4, 512)  # Note: None is the batch size
 
     return model
 
@@ -68,9 +79,12 @@ class Discriminator(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate)
         self.main = make_discriminator_model()
 
+        # May switch the discriminate and classification heads to dense layers
         self.discriminate = tf.keras.Sequential(
             [
-                tf.keras.layers.Dense(1, activation="sigmoid")
+                Conv2D(1, (4, 4), strides=(1, 1), padding='valid'),
+                Reshape((1, )),
+                tf.keras.layers.Activation(tf.nn.sigmoid)
             ]
         ) 
         

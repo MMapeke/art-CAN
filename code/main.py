@@ -7,12 +7,12 @@ from PIL import Image
 
 def parseArguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--num_epochs", type=int, default=10)
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--num_epochs", type=int, default=75)
     parser.add_argument("--latent_size", type=int, default=100)
     parser.add_argument("--gen_lr", type=float, default=1e-4)
     parser.add_argument("--disc_lr", type=float, default=1e-4)
-    parser.add_argument("--image_size", type=int, default = 28)
+    parser.add_argument("--image_size", type=int, default = 64)
     args = parser.parse_args()
     return args
 
@@ -27,7 +27,7 @@ def train_step(generator, discriminator, batch):
 
         gen_loss = generator.generator_loss(fake_output)
         disc_loss = discriminator.discriminator_loss(real_output, fake_output)
-        # print("Gen Loss: ", gen_loss.numpy(), "Disc Loss: ", disc_loss.numpy())
+        print("Gen Loss: ", gen_loss.numpy(), "Disc Loss: ", disc_loss.numpy())
 
     generator_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
     discriminator_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
@@ -44,13 +44,13 @@ def train(generator, discriminator, dataset):
             train_step(generator, discriminator, batch)
         
         # Sanity Check: Saving Generates Images after each epoch to check if something being learned
-        noise = tf.random.normal([1, args.latent_size])
-        generated_img = generator(noise)[0]
-        print(tf.reduce_max(generated_img), tf.reduce_min(generated_img))
-        generated_img = tf.clip_by_value(generated_img, 0 , 1)
-        generated_img = generated_img * 255
+        # noise = tf.random.normal([1, args.latent_size])
+        # generated_img = generator(noise)[0]
+        # print(tf.reduce_max(generated_img), tf.reduce_min(generated_img))
+        # generated_img = tf.clip_by_value(generated_img, 0 , 1)
+        # generated_img = generated_img * 255
 
-        tf.keras.preprocessing.image.save_img("../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)
+        # tf.keras.preprocessing.image.save_img("../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)
         
 
         # Logic for saving intermediate models would go here
