@@ -1,7 +1,7 @@
 import argparse
 import tensorflow as tf 
 from model import Discriminator, Generator
-from preprocessing import load_wikiart, convert_to_tensor_dataset_2
+from preprocessing import *
 import numpy as np
 from PIL import Image
 
@@ -64,6 +64,8 @@ def train(generator, discriminator, dataset):
 cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 def main(args):
 
+    train_dataset = load_wikiart_as_image_folder_dataset('wikiart_ultra_slim', args.batch_size)
+
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
     data, label_true, label_index, num_of_images = load_wikiart('wikiart_ultra_slim')
     print("Number of images - ", num_of_images)
@@ -78,7 +80,7 @@ def main(args):
         expectation that the image will get read later in batches
     """
 
-    train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
+    # train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
 
     generator = Generator(args.gen_lr)
     discriminator = Discriminator(args.disc_lr)

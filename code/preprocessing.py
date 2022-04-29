@@ -3,13 +3,14 @@ import numpy as np
 import os
 from glob import glob
 import tensorflow as tf
+import tensorflow_datasets as tfds
 
 def load_wikiart(root_folder_name='wikiart'):
 	"""
     Load wikiart from ./data folder
 
     Inputs:
-    - None
+    - root_folder_name: str of the root folder of images
 
     Returns:
     - data: A list of strings, where each element is a filepath to an individual image
@@ -21,7 +22,6 @@ def load_wikiart(root_folder_name='wikiart'):
 	data = glob(os.path.join(f'../data/{root_folder_name}/**/', '*.jpg')) 
 	
 	num_of_images = len(data)
-	# print(num_of_images)
 	label_true = [''] * num_of_images
 	label_index = [0] * num_of_images
 
@@ -84,6 +84,24 @@ def convert_to_tensor_dataset_2(data, labels, batch_size, image_size, buffer_siz
 	train_dataset = tf.data.Dataset.from_tensor_slices((input, labels))
 	train_dataset = train_dataset.shuffle(buffer_size=buffer_size).batch(batch_size, drop_remainder=True)
 	return train_dataset
+
+def load_wikiart_as_image_folder_dataset(root_folder_name='wikiart', batch_size=None):
+	"""
+    Load wikiart from ./data folder
+
+    Inputs:
+    - root_folder_name: str of the root folder of images
+
+    Returns:
+	- tf.data.Dataset, or if split=None, dict<key: tfds.Split, value: tfds.data.Dataset>.
+	"""
+
+	builder = tfds.ImageFolder(os.path.dirname(os.path.abspath(__file__)) + f'/../data/{root_folder_name}/')
+	ds = builder.as_dataset(batch_size=batch_size, shuffle_files=True)
+	# print(builder.info)  # num examples, labels... are automatically calculated
+	# tfds.show_examples(ds, builder.info)
+
+	return ds
 
 def get_images(image_paths, resize_height=64, resize_width=64):
 	images = []
