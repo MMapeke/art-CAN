@@ -61,7 +61,6 @@ def train(generator, discriminator, dataset):
 
         # Logic for saving intermediate models would go here
 
-cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 def main(args):
 
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
