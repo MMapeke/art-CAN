@@ -4,6 +4,7 @@ from model import Discriminator, Generator
 from preprocessing import *
 import numpy as np
 from PIL import Image
+import platform
 
 def parseArguments():
     parser = argparse.ArgumentParser()
@@ -56,7 +57,10 @@ def train(generator, discriminator, dataset):
         generated_img = tf.clip_by_value(generated_img, 0 , 1)
         generated_img = generated_img * 255
 
-        tf.keras.preprocessing.image.save_img("../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)
+        if(platform.system() == "Darwin" or platform.system() == "Linux"): # MacOS / Linux and tf doesn't work well with relative filepaths
+            tf.keras.preprocessing.image.save_img(os.path.dirname(os.path.abspath(__file__)) +  "/../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)        
+        else:
+            tf.keras.preprocessing.image.save_img("../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)
         
 
         # Logic for saving intermediate models would go here
