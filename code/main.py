@@ -66,7 +66,7 @@ def main(args):
 
     print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
     print(tf.test.is_gpu_available())
-    if (not print(tf.test.is_gpu_available())):
+    if (not tf.test.is_gpu_available()):
         exit()
     data, label_true, label_index, num_of_images = load_wikiart('wikiart_ultra_slim')
     print("Number of images - ", num_of_images)
