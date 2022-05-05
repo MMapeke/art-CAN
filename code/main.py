@@ -8,10 +8,10 @@ from PIL import Image
 def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch_size", type=int, default=256)
-    parser.add_argument("--num_epochs", type=int, default=150)
+    parser.add_argument("--num_epochs", type=int, default=250)
     parser.add_argument("--latent_size", type=int, default=100)
-    parser.add_argument("--gen_lr", type=float, default=2e-5)
-    parser.add_argument("--disc_lr", type=float, default=2e-5)
+    parser.add_argument("--gen_lr", type=float, default=1e-5)
+    parser.add_argument("--disc_lr", type=float, default=1e-5)
     parser.add_argument("--image_size", type=int, default = 64)
     args = parser.parse_args()
     return args
