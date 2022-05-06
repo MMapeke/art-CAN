@@ -65,7 +65,7 @@ def make_discriminator_model():
 class Generator(tf.keras.Model):
     def __init__(self, learning_rate):
         super(Generator, self).__init__()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5)
         self.main = make_generator_model()
 
     def call(self, input):
@@ -77,7 +77,7 @@ class Generator(tf.keras.Model):
 class Discriminator(tf.keras.Model):
     def __init__(self, learning_rate):
         super().__init__()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5)
         self.main = make_discriminator_model()
 
         # May switch the discriminate and classification heads to dense layers

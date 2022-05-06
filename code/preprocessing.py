@@ -78,6 +78,8 @@ def convert_to_tensor_dataset_2(data, labels, batch_size, image_size, buffer_siz
     """
 	input = get_images(data, image_size, image_size) # [num_of_images, channel_sizes, height, width] 
 	input = input / 255.0
+	# [0, 1] -> [-1, 1]
+	input = (input * 2) - 1.0
 	
 	# VAE assignment uses [batch_sz, channel_sz, height, width] instead, may need to reshape here?
 

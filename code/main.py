@@ -8,10 +8,10 @@ import platform
 
 def parseArguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--num_epochs", type=int, default=75)
+    parser.add_argument("--batch_size", type=int, default=256)
+    parser.add_argument("--num_epochs", type=int, default=250)
     parser.add_argument("--latent_size", type=int, default=100)
-    parser.add_argument("--gen_lr", type=float, default=1e-4)
+    parser.add_argument("--gen_lr", type=float, default=1e-5)
     parser.add_argument("--disc_lr", type=float, default=1e-5)
     parser.add_argument("--image_size", type=int, default = 64)
     args = parser.parse_args()
@@ -53,8 +53,9 @@ def train(generator, discriminator, dataset):
         generated_img = tf.concat(
             (tf.concat((img1, img2), axis = 0), tf.concat((img3, img4), axis = 0)),
             axis = 1)
-        # TODO: Unsure if individual images should be normalized to [0, 1] or clipped to [0, 1]
-        generated_img = tf.clip_by_value(generated_img, 0 , 1)
+        
+        # Normalize from [-1, 1] -> [0, 255]
+        generated_img = (generated_img + 1) * 0.5
         generated_img = generated_img * 255
 
         if(platform.system() == "Darwin" or platform.system() == "Linux"): # MacOS / Linux and tf doesn't work well with relative filepaths
@@ -65,7 +66,6 @@ def train(generator, discriminator, dataset):
 
         # Logic for saving intermediate models would go here
 
-cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 def main(args):
 
     train_dataset = load_wikiart_as_image_folder_dataset('wikiart_ultra_slim', args.batch_size)
@@ -91,6 +91,11 @@ def main(args):
 
     generator = Generator(args.gen_lr)
     discriminator = Discriminator(args.disc_lr)
+    
+    generator.build(input_shape=(None, 100))
+    generator.summary()
+    discriminator.build(input_shape=(None, 64, 64, 3))
+    discriminator.summary()
 
     train(generator, discriminator, train_dataset)
 
