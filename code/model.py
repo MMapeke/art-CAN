@@ -3,10 +3,9 @@ from tensorflow.keras.layers import Dense, Flatten, Reshape, BatchNormalization,
 import numpy as np
 
 # TODO: Confirm data pipeline works, Need to normalize discriminator inputs maybe?
-# TODO: Confirm gpu compatible + GCP Setup
 # TODO: Model Saving + Loading, Visualizations, Plots
 # TODO: Integrate CAN Features
-# TODO: If normal GAN has trouble, try different architectures + mode collapse tricks (blurring discrim, )
+# TODO: If normal GAN has trouble, try different architectures + sanity check everything + mode collapse tricks (blurring discrim, )
 
 # This method returns a helper function to compute cross entropy loss
 cross_entropy = tf.keras.backend.binary_crossentropy
@@ -63,9 +62,9 @@ def make_discriminator_model():
     return model
 
 class Generator(tf.keras.Model):
-    def __init__(self, learning_rate):
+    def __init__(self, learning_rate, beta):
         super(Generator, self).__init__()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate, beta)
         self.main = make_generator_model()
 
     def call(self, input):
@@ -75,9 +74,9 @@ class Generator(tf.keras.Model):
         return tf.math.reduce_mean(cross_entropy(tf.ones_like(fake_output), fake_output))
 
 class Discriminator(tf.keras.Model):
-    def __init__(self, learning_rate):
+    def __init__(self, learning_rate, beta):
         super().__init__()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate, 0.5)
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate, beta)
         self.main = make_discriminator_model()
 
         # May switch the discriminate and classification heads to dense layers

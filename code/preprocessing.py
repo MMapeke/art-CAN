@@ -19,14 +19,14 @@ def load_wikiart(root_folder_name='wikiart'):
     - num_of_images: An int representing the number of images in the data list
 	"""
 
-	data = glob(os.path.join(f'../data/{root_folder_name}/**/', '*.jpg')) 
+	data = glob(os.path.join(f'../../data/{root_folder_name}/**/', '*.jpg')) 
 	
 	num_of_images = len(data)
 	label_true = [''] * num_of_images
 	label_index = [0] * num_of_images
 
-	prefix_length = len(f'../data/{root_folder_name}/')
-	folder_path_list = glob(f'../data/{root_folder_name}/**/', recursive=True)[1:]
+	prefix_length = len(f'../../data/{root_folder_name}/')
+	folder_path_list = glob(f'../../data/{root_folder_name}/**/', recursive=True)[1:]
 
 	label_to_folder_index = {} # will be filled as { art_style (string): index (int): }
 	for index, folder_name in enumerate(folder_path_list):
@@ -98,7 +98,7 @@ def load_wikiart_as_image_folder_dataset(root_folder_name='wikiart', batch_size=
 	- tf.data.Dataset, or if split=None, dict<key: tfds.Split, value: tfds.data.Dataset>.
 	"""
 
-	builder = tfds.ImageFolder(os.path.dirname(os.path.abspath(__file__)) + f'/../data/{root_folder_name}/')
+	builder = tfds.ImageFolder(os.path.dirname(os.path.abspath(__file__)) + f'/../../data/{root_folder_name}/')
 	ds = builder.as_dataset(batch_size=batch_size, shuffle_files=True)
 	# print(builder.info)  # num examples, labels... are automatically calculated
 	# tfds.show_examples(ds, builder.info)

@@ -13,7 +13,9 @@ def parseArguments():
     parser.add_argument("--latent_size", type=int, default=100)
     parser.add_argument("--gen_lr", type=float, default=1e-5)
     parser.add_argument("--disc_lr", type=float, default=1e-5)
-    parser.add_argument("--image_size", type=int, default = 64)
+    parser.add_argument("--beta", type=float, default=0.5)
+    parser.add_argument("--image_size", type=int, default=64)
+    parser.add_argument("--data", type=int, default=0)
     args = parser.parse_args()
     return args
 
@@ -58,24 +60,53 @@ def train(generator, discriminator, dataset):
         generated_img = (generated_img + 1) * 0.5
         generated_img = generated_img * 255
 
+        # Switch here for custom directory names
+        inter_dir = "intermediate-gen_lr_" + str(args.gen_lr) + "-disc_lr_" + str(args.disc_lr) + "-beta_" + str(args.beta) + "-dataset_" + str(args.data)
+        
         if(platform.system() == "Darwin" or platform.system() == "Linux"): # MacOS / Linux and tf doesn't work well with relative filepaths
-            tf.keras.preprocessing.image.save_img(os.path.dirname(os.path.abspath(__file__)) +  "/../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)        
+            inter_dir = os.path.dirname(os.path.abspath(__file__)) +  "/../results/" + inter_dir
+            if (not os.path.exists(inter_dir)):
+                os.makedirs(inter_dir)
+            tf.keras.preprocessing.image.save_img(inter_dir + "/epoch-" + str(epoch) + ".png", generated_img)        
         else:
-            tf.keras.preprocessing.image.save_img("../results/intermediate-images/epoch-" + str(epoch) + ".png", generated_img)
+            inter_dir = "../results/" + inter_dir
+            if (not os.path.exists(inter_dir)):
+                os.makedirs(inter_dir)
+            tf.keras.preprocessing.image.save_img(inter_dir + "/epoch-" + str(epoch) + ".png", generated_img)
         
 
         # Logic for saving intermediate models would go here
 
 def main(args):
 
-    train_dataset = load_wikiart_as_image_folder_dataset('wikiart_ultra_slim', args.batch_size)
+    if (args.data > 2):
+        print("--data must be 0, 1, 2")
+        exit()
+    
+    dataset_name = None
+    if (args.data == 0):
+        dataset_name = "wikiart_ultra_slim"
+    elif (args.data == 1):
+        dataset_name = "wikiart_slim"
+    elif (args.data == 2):
+        dataset_name = "wikiart"
 
-    print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
     print(tf.test.is_gpu_available())
     if (not tf.test.is_gpu_available()):
         exit()
-    data, label_true, label_index, num_of_images = load_wikiart('wikiart_ultra_slim')
+
+    # Version 1: Loading as list, then passing to tf.dataset
+    data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
     print("Number of images - ", num_of_images)
+    train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
+
+    # Version 2: Using Image Folder
+    # Not sure if this is correct logic for number of images
+    # train_dataset = load_wikiart_as_image_folder_dataset('wikiart_ultra_slim', args.batch_size)
+    # i = 0 
+    # for _ in enumerate(train_dataset):
+        # i = i + 1
+    # print("Number of images: ", i * args.batch_size)
 
     """
         Preprocessing note: 
@@ -87,10 +118,8 @@ def main(args):
         expectation that the image will get read later in batches
     """
 
-    # train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
-
-    generator = Generator(args.gen_lr)
-    discriminator = Discriminator(args.disc_lr)
+    generator = Generator(args.gen_lr, args.beta)
+    discriminator = Discriminator(args.disc_lr, args.beta)
     
     generator.build(input_shape=(None, 100))
     generator.summary()
