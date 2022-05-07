@@ -118,6 +118,7 @@ def main(args):
         expectation that the image will get read later in batches
     """
 
+    print("Learning rates: ", str(args.gen_lr), str(args.disc_lr))
     generator = Generator(args.gen_lr, args.beta)
     discriminator = Discriminator(args.disc_lr, args.beta)
     
