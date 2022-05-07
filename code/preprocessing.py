@@ -19,14 +19,14 @@ def load_wikiart(root_folder_name='wikiart'):
     - num_of_images: An int representing the number of images in the data list
 	"""
 
-	data = glob(os.path.join(f'../../data/{root_folder_name}/**/', '*.jpg')) 
+	data = glob(os.path.join(f'../../../data/{root_folder_name}/**/', '*.jpg')) 
 	
 	num_of_images = len(data)
 	label_true = [''] * num_of_images
 	label_index = [0] * num_of_images
 
-	prefix_length = len(f'../../data/{root_folder_name}/')
-	folder_path_list = glob(f'../../data/{root_folder_name}/**/', recursive=True)[1:]
+	prefix_length = len(f'../../../data/{root_folder_name}/')
+	folder_path_list = glob(f'../../../data/{root_folder_name}/**/', recursive=True)[1:]
 
 	label_to_folder_index = {} # will be filled as { art_style (string): index (int): }
 	for index, folder_name in enumerate(folder_path_list):
