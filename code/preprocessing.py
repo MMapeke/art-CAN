@@ -98,7 +98,7 @@ def load_wikiart_as_image_folder_dataset(root_folder_name='wikiart', batch_size=
 	- tf.data.Dataset, or if split=None, dict<key: tfds.Split, value: tfds.data.Dataset>.
 	"""
 
-	builder = tfds.ImageFolder(os.path.dirname(os.path.abspath(__file__)) + f'/../../data/{root_folder_name}/')
+	builder = tfds.ImageFolder(os.path.dirname(os.path.abspath(__file__)) + f'/../../../data/{root_folder_name}/')
 	ds = builder.as_dataset(batch_size=batch_size, shuffle_files=True)
 	# print(builder.info)  # num examples, labels... are automatically calculated
 	# tfds.show_examples(ds, builder.info)
