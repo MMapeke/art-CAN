@@ -8,7 +8,7 @@ Notes to Self + For GCP:
 - If Code isn't running locally or on GCP for some reason, might be because the GPU check in main.py
 - The intermediate results folder name is based off hyperparameters
 - Don't use virtual environment, the GCP should have the packages needed
-- NOTE: /data directory should be in the parent directory of where art-CAN is cloned
+- NOTE: /data directory should be in the parent's parent directory of where art-CAN is cloned
 
 
 Resources:
