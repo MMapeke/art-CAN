@@ -10,18 +10,22 @@ import matplotlib.pyplot as plt
 def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--num_epochs", type=int, default=5)
+    parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--latent_size", type=int, default=100)
-    parser.add_argument("--gen_lr", type=float, default=1e-3)
+    parser.add_argument("--gen_lr", type=float, default=1e-4)
     parser.add_argument("--disc_lr", type=float, default=1e-4)
     parser.add_argument("--beta", type=float, default=0.5)
     parser.add_argument("--image_size", type=int, default=64)
     parser.add_argument("--data", type=int, default=0)
+    # Uses regular GAN instead of CAN
+    parser.add_argument("--use_gan", action="store_true") 
     args = parser.parse_args()
     return args
 
 def train_step(generator, discriminator, batch):
     noise = tf.random.normal([args.batch_size, args.latent_size])
+    
+    # Train discriminator
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         images, _ = batch
 
@@ -29,16 +33,24 @@ def train_step(generator, discriminator, batch):
         real_output, _ = discriminator(images)
         fake_output, _ = discriminator(generated_images)
 
-        gen_loss = generator.generator_loss(fake_output)
         disc_loss = discriminator.discriminator_loss(real_output, fake_output)
-        print("Gen Loss: ", gen_loss.numpy(), "Disc Loss: ", disc_loss.numpy())
 
-    generator_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
     discriminator_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
-
-    generator.optimizer.apply_gradients(zip(generator_gradients, generator.trainable_variables))
     discriminator.optimizer.apply_gradients(zip(discriminator_gradients, discriminator.trainable_variables))
 
+    # Train generator
+    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+        images, _ = batch
+
+        generated_images = generator(noise)
+        fake_output, _ = discriminator(generated_images)
+
+        gen_loss = generator.generator_loss(fake_output)
+
+    generator_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
+    generator.optimizer.apply_gradients(zip(generator_gradients, generator.trainable_variables))
+
+    print("Gen Loss: ", gen_loss.numpy(), "Disc Loss: ", disc_loss.numpy())
     return gen_loss, disc_loss
 
 
@@ -86,7 +98,7 @@ def train(generator, discriminator, dataset):
         generated_img = generated_img * 255
 
         # Switch here for custom directory names
-        inter_dir = "intermediate-gen_lr_" + str(args.gen_lr) + "-disc_lr_" + str(args.disc_lr) + "-beta_" + str(args.beta) + "-dataset_" + str(args.data)
+        inter_dir = "intermediate-gen_lr_" + str(args.gen_lr) + "-disc_lr_" + str(args.disc_lr) + "-beta_" + str(args.beta) + "-dataset_" + str(args.data) + "-CAN_" + str(not args.use_gan)
         
         if(platform.system() == "Darwin" or platform.system() == "Linux"): # MacOS / Linux and tf doesn't work well with relative filepaths
             inter_dir = os.path.dirname(os.path.abspath(__file__)) +  "/../results/" + inter_dir
@@ -158,7 +170,7 @@ def main(args):
     gen_losses, dis_losses, directory = train(generator, discriminator, train_dataset)
     epochs = range(len(gen_losses))
     plt.plot(epochs, gen_losses, 'b', label='Generator Loss')
-    plt.plot(epochs, dis_losses, 'b', label='Discriminator Loss', color='r')
+    plt.plot(epochs, dis_losses, 'r', label='Discriminator Loss')
     plt.title('Generator and Discriminator loss')
     plt.legend()
     plt.savefig(directory + '/loss_graph.png')
