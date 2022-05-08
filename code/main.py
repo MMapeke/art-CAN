@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt
 
 def parseArguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=256)
-    parser.add_argument("--num_epochs", type=int, default=250)
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--num_epochs", type=int, default=10)
     parser.add_argument("--latent_size", type=int, default=100)
-    parser.add_argument("--gen_lr", type=float, default=1e-5)
-    parser.add_argument("--disc_lr", type=float, default=1e-5)
+    parser.add_argument("--gen_lr", type=float, default=1e-3)
+    parser.add_argument("--disc_lr", type=float, default=1e-4)
     parser.add_argument("--beta", type=float, default=0.5)
     parser.add_argument("--image_size", type=int, default=64)
     parser.add_argument("--data", type=int, default=0)
@@ -46,6 +46,8 @@ def train(generator, discriminator, dataset):
     gen_losses = []
     dis_losses = []
 
+
+    noise = tf.random.normal([9, args.latent_size])
     for epoch in range(args.num_epochs):
         print("Epoch - ", epoch)
         epoch_gen_loss = 0
@@ -61,13 +63,22 @@ def train(generator, discriminator, dataset):
         dis_losses.append(epoch_dis_loss / num_batches)
         
         # Sanity Check: Saving Generates Images after each epoch to check if something being learned
-        noise = tf.random.normal([4, args.latent_size])
-        img1 = generator(noise)[0]
-        img2 = generator(noise)[1]
-        img3 = generator(noise)[2]
-        img4 = generator(noise)[3]
+        output = generator(noise)
+        img0 = output[0]
+        img1 = output[1]
+        img2 = output[2]
+        img3 = output[3]
+        img4 = output[4]
+        img5 = output[5]
+        img6 = output[6]
+        img7 = output[7]
+        img8 = output[8]
+
         generated_img = tf.concat(
-            (tf.concat((img1, img2), axis = 0), tf.concat((img3, img4), axis = 0)),
+            (
+                tf.concat((img0, img1, img2), axis = 0), 
+                tf.concat((img3, img4, img5), axis = 0),
+                tf.concat((img6, img7, img8), axis = 0)),
             axis = 1)
         
         # Normalize from [-1, 1] -> [0, 255]
@@ -109,7 +120,8 @@ def main(args):
 
     print(tf.test.is_gpu_available())
     if (not tf.test.is_gpu_available()):
-        exit()
+        pass
+        # exit()
 
     # Version 1: Loading as list, then passing to tf.dataset
     data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
