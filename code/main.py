@@ -22,18 +22,22 @@ def parseArguments():
     args = parser.parse_args()
     return args
 
-def train_step(generator, discriminator, batch):
+def train_step(generator, discriminator, batch, num_classes):
     noise = tf.random.normal([args.batch_size, args.latent_size])
     
     # Train discriminator
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        images, _ = batch
+        images, y = batch
+        y = tf.one_hot(y, num_classes)
 
         generated_images = generator(noise)
-        real_output, _ = discriminator(images)
+        real_output, real_predicted_classes = discriminator(images)
         fake_output, _ = discriminator(generated_images)
 
-        disc_loss = discriminator.discriminator_loss(real_output, fake_output)
+        if args.use_gan:
+            disc_loss = discriminator.discriminator_loss(real_output, fake_output)
+        else:
+            disc_loss = discriminator.discriminator_loss_CAN(real_output, fake_output, y, real_predicted_classes)
 
     discriminator_gradients = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
     discriminator.optimizer.apply_gradients(zip(discriminator_gradients, discriminator.trainable_variables))
@@ -43,9 +47,12 @@ def train_step(generator, discriminator, batch):
         images, _ = batch
 
         generated_images = generator(noise)
-        fake_output, _ = discriminator(generated_images)
+        fake_output, fake_predicted_classes = discriminator(generated_images)
 
-        gen_loss = generator.generator_loss(fake_output)
+        if args.use_gan:
+            gen_loss = generator.generator_loss(fake_output)
+        else:
+            gen_loss = generator.generator_loss_CAN(fake_output, fake_predicted_classes)
 
     generator_gradients = gen_tape.gradient(gen_loss, generator.trainable_variables)
     generator.optimizer.apply_gradients(zip(generator_gradients, generator.trainable_variables))
@@ -54,7 +61,7 @@ def train_step(generator, discriminator, batch):
     return gen_loss, disc_loss
 
 
-def train(generator, discriminator, dataset):
+def train(generator, discriminator, dataset, num_classes):
     gen_losses = []
     dis_losses = []
 
@@ -66,7 +73,7 @@ def train(generator, discriminator, dataset):
         epoch_dis_loss = 0
         num_batches = 0
         for _, batch, in enumerate(dataset):
-            batch_gen_loss, batch_dis_loss = train_step(generator, discriminator, batch)
+            batch_gen_loss, batch_dis_loss = train_step(generator, discriminator, batch, num_classes)
             epoch_gen_loss = epoch_gen_loss + batch_gen_loss
             epoch_dis_loss = epoch_dis_loss + batch_dis_loss
             num_batches = num_batches + 1
@@ -125,10 +132,15 @@ def main(args):
     dataset_name = None
     if (args.data == 0):
         dataset_name = "wikiart_ultra_slim"
+        num_classes = 3
     elif (args.data == 1):
         dataset_name = "wikiart_slim"
+        num_classes = 5
     elif (args.data == 2):
         dataset_name = "wikiart"
+        num_classes = 27
+        print("SANITY CHECK NUMBER OF CLASSES IN WIKIART on GCP, then remove this")
+        exit()
 
     print(tf.test.is_gpu_available())
     if (not tf.test.is_gpu_available()):
@@ -137,7 +149,6 @@ def main(args):
 
     # Version 1: Loading as list, then passing to tf.dataset
     data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
-    print("Number of images - ", num_of_images)
     train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
 
     # Version 2: Using Image Folder
@@ -159,15 +170,15 @@ def main(args):
     """
 
     print("Learning rates: ", str(args.gen_lr), str(args.disc_lr))
-    generator = Generator(args.gen_lr, args.beta)
-    discriminator = Discriminator(args.disc_lr, args.beta)
+    generator = Generator(args.gen_lr, args.beta, num_classes)
+    discriminator = Discriminator(args.disc_lr, args.beta, num_classes)
     
     generator.build(input_shape=(None, 100))
     generator.summary()
     discriminator.build(input_shape=(None, 64, 64, 3))
     discriminator.summary()
 
-    gen_losses, dis_losses, directory = train(generator, discriminator, train_dataset)
+    gen_losses, dis_losses, directory = train(generator, discriminator, train_dataset, num_classes)
     epochs = range(len(gen_losses))
     plt.plot(epochs, gen_losses, 'b', label='Generator Loss')
     plt.plot(epochs, dis_losses, 'r', label='Discriminator Loss')
