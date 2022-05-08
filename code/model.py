@@ -8,7 +8,7 @@ import numpy as np
 # TODO: If normal GAN has trouble, try different architectures + sanity check everything + mode collapse tricks (blurring discrim, )
 
 # This method returns a helper function to compute cross entropy loss
-cross_entropy = tf.keras.backend.binary_crossentropy
+cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 def make_generator_model():
     model = tf.keras.Sequential()
@@ -40,20 +40,20 @@ def make_generator_model():
 
 def make_discriminator_model():
     model = tf.keras.Sequential()
-    model.add(Conv2D(64, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
+    model.add(Conv2D(64, (4, 4), strides=(2, 2), use_bias=False, padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02),
                                      input_shape=[64, 64, 3]))
     model.add(BatchNormalization()) # reference doesn't have this
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2D(128, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
+    model.add(Conv2D(128, (4, 4), strides=(2, 2), use_bias=False, padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2D(256, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
+    model.add(Conv2D(256, (4, 4), strides=(2, 2), use_bias=False, padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
-    model.add(Conv2D(512, (4, 4), strides=(2, 2), padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
+    model.add(Conv2D(512, (4, 4), strides=(2, 2), use_bias=False, padding='same', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)))
     model.add(BatchNormalization())
     model.add(LeakyReLU(0.2))
 
@@ -84,7 +84,7 @@ class Discriminator(tf.keras.Model):
             [
                 Conv2D(1, (4, 4), strides=(1, 1), padding='valid', kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)),
                 Reshape((1, )),
-                tf.keras.layers.Activation(tf.nn.sigmoid)
+                # tf.keras.layers.Activation(tf.nn.sigmoid)
             ]
         ) 
         

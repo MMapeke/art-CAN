@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch_size", type=int, default=128)
-    parser.add_argument("--num_epochs", type=int, default=10)
+    parser.add_argument("--num_epochs", type=int, default=5)
     parser.add_argument("--latent_size", type=int, default=100)
     parser.add_argument("--gen_lr", type=float, default=1e-3)
     parser.add_argument("--disc_lr", type=float, default=1e-4)
@@ -158,7 +158,7 @@ def main(args):
     gen_losses, dis_losses, directory = train(generator, discriminator, train_dataset)
     epochs = range(len(gen_losses))
     plt.plot(epochs, gen_losses, 'b', label='Generator Loss')
-    plt.plot(epochs, dis_losses, 'b', label='Discriminator Loss')
+    plt.plot(epochs, dis_losses, 'b', label='Discriminator Loss', color='r')
     plt.title('Generator and Discriminator loss')
     plt.legend()
     plt.savefig(directory + '/loss_graph.png')
