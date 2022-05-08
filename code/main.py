@@ -5,6 +5,7 @@ from preprocessing import *
 import numpy as np
 from PIL import Image
 import platform
+import matplotlib.pyplot as plt
 
 def parseArguments():
     parser = argparse.ArgumentParser()
@@ -38,13 +39,26 @@ def train_step(generator, discriminator, batch):
     generator.optimizer.apply_gradients(zip(generator_gradients, generator.trainable_variables))
     discriminator.optimizer.apply_gradients(zip(discriminator_gradients, discriminator.trainable_variables))
 
+    return gen_loss, disc_loss
+
 
 def train(generator, discriminator, dataset):
+    gen_losses = []
+    dis_losses = []
 
     for epoch in range(args.num_epochs):
         print("Epoch - ", epoch)
+        epoch_gen_loss = 0
+        epoch_dis_loss = 0
+        num_batches = 0
         for _, batch, in enumerate(dataset):
-            train_step(generator, discriminator, batch)
+            batch_gen_loss, batch_dis_loss = train_step(generator, discriminator, batch)
+            epoch_gen_loss = epoch_gen_loss + batch_gen_loss
+            epoch_dis_loss = epoch_dis_loss + batch_dis_loss
+            num_batches = num_batches + 1
+
+        gen_losses.append(epoch_gen_loss / num_batches)
+        dis_losses.append(epoch_dis_loss / num_batches)
         
         # Sanity Check: Saving Generates Images after each epoch to check if something being learned
         noise = tf.random.normal([4, args.latent_size])
@@ -76,6 +90,8 @@ def train(generator, discriminator, dataset):
         
 
         # Logic for saving intermediate models would go here
+
+    return gen_losses, dis_losses, inter_dir
 
 def main(args):
 
@@ -127,7 +143,14 @@ def main(args):
     discriminator.build(input_shape=(None, 64, 64, 3))
     discriminator.summary()
 
-    train(generator, discriminator, train_dataset)
+    gen_losses, dis_losses, directory = train(generator, discriminator, train_dataset)
+    epochs = range(len(gen_losses))
+    plt.plot(epochs, gen_losses, 'b', label='Generator Loss')
+    plt.plot(epochs, dis_losses, 'b', label='Discriminator Loss')
+    plt.title('Generator and Discriminator loss')
+    plt.legend()
+    plt.savefig(directory + '/loss_graph.png')
+    
 
 if __name__ == "__main__":
     args = parseArguments()
