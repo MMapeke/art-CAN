@@ -28,6 +28,8 @@ def train_step(generator, discriminator, batch, num_classes):
     # Train discriminator
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         images, y = batch
+        images = get_images(images)
+
         y = tf.one_hot(y, num_classes)
 
         generated_images = generator(noise)
@@ -45,6 +47,7 @@ def train_step(generator, discriminator, batch, num_classes):
     # Train generator
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         images, _ = batch
+        images = get_images(images)
 
         generated_images = generator(noise)
         fake_output, fake_predicted_classes = discriminator(generated_images)
@@ -64,7 +67,6 @@ def train_step(generator, discriminator, batch, num_classes):
 def train(generator, discriminator, dataset, num_classes):
     gen_losses = []
     dis_losses = []
-
 
     noise = tf.random.normal([9, args.latent_size])
     for epoch in range(args.num_epochs):
@@ -147,17 +149,22 @@ def main(args):
         pass
         # exit()
 
-    # Version 1: Loading as list, then passing to tf.dataset
+    # Version 1: Loading as list of image paths (requires use of get_images()), then passing to tf.dataset
+    data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
+    train_dataset = convert_to_tensor_dataset_1(data, label_index, args.batch_size)
+
+    # Version 2: Loading as list of images, then passing to tf.dataset
     data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
     train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
 
-    # Version 2: Using Image Folder
+    # Version 3: Using Image Folder
     # Not sure if this is correct logic for number of images
     # train_dataset = load_wikiart_as_image_folder_dataset('wikiart_ultra_slim', args.batch_size)
     # i = 0 
     # for _ in enumerate(train_dataset):
         # i = i + 1
     # print("Number of images: ", i * args.batch_size)
+    
 
     """
         Preprocessing note: 
