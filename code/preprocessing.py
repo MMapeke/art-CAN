@@ -112,6 +112,8 @@ def get_images(image_paths, resize_height=64, resize_width=64):
 	return np.array(images)
 
 def get_image(image_path, resize_height=64, resize_width=64):
+	if (tf.is_tensor(image_path)):
+		image_path = bytes.decode(image_path.numpy())
 	image = Image.open(image_path)
 	resized_image = image.resize((resize_height, resize_width))
 	final_image = np.asarray(resized_image)

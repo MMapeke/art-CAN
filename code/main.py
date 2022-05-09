@@ -29,6 +29,8 @@ def train_step(generator, discriminator, batch, num_classes):
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         images, y = batch
         images = get_images(images)
+        images = images / 255.0
+        images = (images * 2) - 1.0
 
         y = tf.one_hot(y, num_classes)
 
@@ -48,6 +50,8 @@ def train_step(generator, discriminator, batch, num_classes):
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
         images, _ = batch
         images = get_images(images)
+        images = images / 255.0
+        images = (images * 2) - 1.0
 
         generated_images = generator(noise)
         fake_output, fake_predicted_classes = discriminator(generated_images)
