@@ -1,9 +1,11 @@
-from PIL import Image
+from PIL import Image, ImageFile
 import numpy as np
 import os
 from glob import glob
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def load_wikiart(root_folder_name='wikiart'):
 	"""
