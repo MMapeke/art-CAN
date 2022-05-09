@@ -154,8 +154,8 @@ def main(args):
     train_dataset = convert_to_tensor_dataset_1(data, label_index, args.batch_size)
 
     # Version 2: Loading as list of images, then passing to tf.dataset
-    data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
-    train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
+    # data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
+    # train_dataset = convert_to_tensor_dataset_2(data, label_index, args.batch_size, args.image_size)
 
     # Version 3: Using Image Folder
     # Not sure if this is correct logic for number of images
