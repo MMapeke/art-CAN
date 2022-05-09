@@ -145,8 +145,6 @@ def main(args):
     elif (args.data == 2):
         dataset_name = "wikiart"
         num_classes = 27
-        print("SANITY CHECK NUMBER OF CLASSES IN WIKIART on GCP, then remove this")
-        exit()
 
     print(tf.test.is_gpu_available())
     if (not tf.test.is_gpu_available()):
