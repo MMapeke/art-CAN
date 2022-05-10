@@ -1,9 +1,11 @@
-from PIL import Image
+from PIL import Image, ImageFile
 import numpy as np
 import os
 from glob import glob
 import tensorflow as tf
 import tensorflow_datasets as tfds
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def load_wikiart(root_folder_name='wikiart'):
 	"""
@@ -112,7 +114,9 @@ def get_images(image_paths, resize_height=64, resize_width=64):
 	return np.array(images)
 
 def get_image(image_path, resize_height=64, resize_width=64):
+	if (tf.is_tensor(image_path)):
+		image_path = bytes.decode(image_path.numpy())
 	image = Image.open(image_path)
 	resized_image = image.resize((resize_height, resize_width))
-	final_image = np.asarray(resized_image)
+	final_image = np.array(resized_image)
 	return final_image
