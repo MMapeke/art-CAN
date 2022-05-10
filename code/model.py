@@ -86,7 +86,7 @@ class Generator(tf.keras.Model):
         return total_loss
 
 class Discriminator(tf.keras.Model):
-    def __init__(self, learning_rate, beta, num_classes):
+    def __init__(self, learning_rate, beta, num_classes, use_gan):
         super().__init__()
         self.K = num_classes
         self.optimizer = tf.keras.optimizers.Adam(learning_rate, beta)
@@ -115,6 +115,9 @@ class Discriminator(tf.keras.Model):
             ],
             name = "classification_head"
         )
+
+        if (use_gan):
+            self.classify.trainable = False
 
     def call(self, input):
         out = self.main(input)

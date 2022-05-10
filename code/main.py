@@ -182,7 +182,7 @@ def main(args):
 
     print("Learning rates: ", str(args.gen_lr), str(args.disc_lr))
     generator = Generator(args.gen_lr, args.beta, num_classes)
-    discriminator = Discriminator(args.disc_lr, args.beta, num_classes)
+    discriminator = Discriminator(args.disc_lr, args.beta, num_classes, args.use_gan)
     
     generator.build(input_shape=(None, 100))
     generator.summary()
