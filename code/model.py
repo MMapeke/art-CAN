@@ -106,11 +106,11 @@ class Discriminator(tf.keras.Model):
         self.classify = tf.keras.Sequential(
             [
                 Flatten(),
-                Dense(1024),
+                Dense(1024, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)),
                 LeakyReLU(0.2),
-                Dense(512),
+                Dense(512, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)),
                 LeakyReLU(0.2),
-                Dense(self.K),
+                Dense(self.K, kernel_initializer=tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)),
                 Softmax()
             ],
             name = "classification_head"

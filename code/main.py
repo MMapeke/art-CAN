@@ -131,7 +131,7 @@ def train(generator, discriminator, dataset, num_classes):
 
 def main(args):
 
-    if (args.data > 2):
+    if (args.data > 3):
         print("--data must be 0, 1, 2")
         exit()
     
@@ -143,6 +143,9 @@ def main(args):
         dataset_name = "wikiart_slim"
         num_classes = 5
     elif (args.data == 2):
+        dataset_name = "wikiart_lightly_slim"
+        num_classes = 14
+    elif (args.data == 3):
         dataset_name = "wikiart"
         num_classes = 27
 
