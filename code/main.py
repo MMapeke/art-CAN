@@ -23,10 +23,10 @@ def parseArguments():
     return args
 
 def train_step(generator, discriminator, batch, num_classes):
-    noise = tf.random.normal([args.batch_size, args.latent_size])
+    noise = tf.random.normal([args.batch_size, args.latent_size])   
     
     # Train discriminator
-    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+    with tf.GradientTape() as disc_tape:
         images, y = batch
         images = get_images(images)
         images = images / 255.0
@@ -47,11 +47,11 @@ def train_step(generator, discriminator, batch, num_classes):
     discriminator.optimizer.apply_gradients(zip(discriminator_gradients, discriminator.trainable_variables))
 
     # Train generator
-    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        images, _ = batch
-        images = get_images(images)
-        images = images / 255.0
-        images = (images * 2) - 1.0
+    with tf.GradientTape() as gen_tape:
+        # images, _ = batch
+        # images = get_images(images)
+        # images = images / 255.0
+        # images = (images * 2) - 1.0
 
         generated_images = generator(noise)
         fake_output, fake_predicted_classes = discriminator(generated_images)
