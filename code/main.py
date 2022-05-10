@@ -124,6 +124,10 @@ def train(generator, discriminator, dataset, num_classes):
                 os.makedirs(inter_dir)
             tf.keras.preprocessing.image.save_img(inter_dir + "/epoch-" + str(epoch) + ".png", generated_img)
         
+        if epoch % 5 == 0:
+            generator.save_weights(inter_dir + '/gen_weights_epoch-' + str(epoch) + '.h5')
+            discriminator.save_weights(inter_dir + '/disc_weights_epoch-' + str(epoch) + '.h5')
+        
 
         # Logic for saving intermediate models would go here
 
@@ -202,8 +206,8 @@ def main(args):
     plt.title('Generator and Discriminator loss')
     plt.legend()
     plt.savefig(directory + '/loss_graph.png')
-    generator.save_weights(directory + '/gen_weights.h5')
-    discriminator.save_weights(directory + '/disc_weights.h5')
+    generator.save_weights(directory + '/gen_weights_final.h5')
+    discriminator.save_weights(directory + '/disc_weights_final.h5')
 
     
 
