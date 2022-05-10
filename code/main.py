@@ -144,8 +144,7 @@ def main(args):
 
     print(tf.test.is_gpu_available())
     if (not tf.test.is_gpu_available()):
-        pass
-        # exit()
+        exit()
 
     # Version 1: Loading as list, then passing to tf.dataset
     data, label_true, label_index, num_of_images = load_wikiart(dataset_name)
@@ -177,6 +176,12 @@ def main(args):
     generator.summary()
     discriminator.build(input_shape=(None, 64, 64, 3))
     discriminator.summary()
+    # uncomment this if you want to load weights and keep training on those, but I don't think we have to?
+    # generator.load_weights('insert path to generator weights')
+    # discriminator.load_weights('insert path to discriminator weights')
+    # generator.compile()
+    # discriminator.compile()
+
 
     gen_losses, dis_losses, directory = train(generator, discriminator, train_dataset, num_classes)
     epochs = range(len(gen_losses))
@@ -185,6 +190,9 @@ def main(args):
     plt.title('Generator and Discriminator loss')
     plt.legend()
     plt.savefig(directory + '/loss_graph.png')
+    generator.save_weights(directory + '/gen_weights.h5')
+    discriminator.save_weights(directory + '/disc_weights.h5')
+
     
 
 if __name__ == "__main__":
